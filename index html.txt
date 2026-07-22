@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Network Safety Simulator</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#fff;
+    text-align:center;
+    color:#333;
+}
+
+.container{
+    width:90%;
+    max-width:950px;
+    margin:auto;
+    padding:30px;
+}
+
+h1{
+    color:#1E8E5A;
+}
+
+button{
+    padding:12px 20px;
+    margin:8px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.toggle{
+    background:#ececec;
+}
+
+.run{
+    background:#1E8E5A;
+    color:white;
+}
+
+.card{
+    margin-top:25px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:20px;
+}
+
+#status{
+    font-size:22px;
+    margin-top:10px;
+}
+
+.good{
+    color:green;
+}
+
+.medium{
+    color:orange;
+}
+
+.bad{
+    color:red;
+}
+
+#loading{
+    display:none;
+    font-size:20px;
+    margin:20px;
+    color:#1E8E5A;
+}
+
+.loader{
+    width:28px;
+    height:28px;
+    border:5px solid #ddd;
+    border-top:5px solid #1E8E5A;
+    border-radius:50%;
+    margin:auto;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+
+}
+
+#map{
+    width:100%;
+    max-width:850px;
+    position:relative;
+    margin:auto;
+    margin-top:20px;
+}
+
+#map img{
+    width:100%;
+}
+
+#marker{
+    position:absolute;
+    width:18px;
+    height:18px;
+    background:red;
+    border-radius:50%;
+    border:3px solid white;
+    transform:translate(-50%,-50%);
+    display:none;
+}
+
+#flag{
+    width:110px;
+    margin-top:10px;
+    border:1px solid #ccc;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Network Safety Test Simulator</h1>
+
+<button id="networkButton" class="toggle">
+Network: Public
+</button>
+
+<button id="vpnButton" class="toggle">
+VPN: Off
+</button>
+
+<br>
+
+<button class="run" onclick="runTest()">
+Run Network Safety Test
+</button>
+
+<div id="loading">
+
+<div class="loader"></div>
+
+<p>Testing your network...</p>
+
+</div>
+
+<div class="card">
+
+<h2>Results</h2>
+
+<p><b>Network:</b>
+<span id="networkText">Public</span>
+</p>
+
+<p><b>VPN:</b>
+<span id="vpnText">Disconnected</span>
+</p>
+
+<p><b>Safety Score:</b>
+<span id="score">30%</span>
+</p>
+
+<p id="status" class="bad">
+Low Security
+</p>
+
+<h2>VPN Location</h2>
+
+<img id="flag" src="" style="display:none;">
+
+<h3 id="country">
+No VPN Connected
+</h3>
+
+<div id="map">
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg">
+
+<div id="marker"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let privateNetwork=false;
+let vpn=false;
+
+const countries=[
+
+{
+name:"United States",
+flag:"https://flagcdn.com/w160/us.png",
+x:22,
+y:39
+},
+
+{
+name:"Canada",
+flag:"https://flagcdn.com/w160/ca.png",
+x:20,
+y:23
+},
+
+{
+name:"United Kingdom",
+flag:"https://flagcdn.com/w160/gb.png",
+x:45,
+y:28
+},
+
+{
+name:"Germany",
+flag:"https://flagcdn.com/w160/de.png",
+x:49,
+y:31
+},
+
+{
+name:"France",
+flag:"https://flagcdn.com/w160/fr.png",
+x:47,
+y:34
+},
+
+{
+name:"Netherlands",
+flag:"https://flagcdn.com/w160/nl.png",
+x:48,
+y:29
+},
+
+{
+name:"Switzerland",
+flag:"https://flagcdn.com/w160/ch.png",
+x:49,
+y:35
+},
+
+{
+name:"Japan",
+flag:"https://flagcdn.com/w160/jp.png",
+x:87,
+y:39
+},
+
+{
+name:"Singapore",
+flag:"https://flagcdn.com/w160/sg.png",
+x:74,
+y:64
+},
+
+{
+name:"Australia",
+flag:"https://flagcdn.com/w160/au.png",
+x:84,
+y:82
+}
+
+];
+
+document.getElementById("networkButton").onclick=function(){
+
+privateNetwork=!privateNetwork;
+
+this.innerHTML="Network: "+(privateNetwork?"Private":"Public");
+
+};
+
+document.getElementById("vpnButton").onclick=function(){
+
+vpn=!vpn;
+
+this.innerHTML="VPN: "+(vpn?"On":"Off");
+
+};
+
+function runTest(){
+
+document.getElementById("loading").style.display="block";
+
+setTimeout(showResults,1000+Math.random()*1000);
+
+}
+
+function showResults(){
+
+document.getElementById("loading").style.display="none";
+
+document.getElementById("networkText").innerHTML=
+privateNetwork?"Private":"Public";
+
+document.getElementById("vpnText").innerHTML=
+vpn?"Connected":"Disconnected";
+
+let score=0;
+
+if(privateNetwork) score+=45;
+
+if(vpn) score+=55;
+
+document.getElementById("score").innerHTML=score+"%";
+
+const status=document.getElementById("status");
+
+if(score==100){
+
+status.innerHTML="Excellent Security";
+status.className="good";
+
+}
+else if(score>=45){
+
+status.innerHTML="Moderate Security";
+status.className="medium";
+
+}
+else{
+
+status.innerHTML="Low Security";
+status.className="bad";
+
+}
+
+const marker=document.getElementById("marker");
+const flag=document.getElementById("flag");
+
+if(vpn){
+
+const country=countries[Math.floor(Math.random()*countries.length)];
+
+document.getElementById("country").innerHTML=country.name;
+
+flag.src=country.flag;
+flag.style.display="inline";
+
+marker.style.display="block";
+marker.style.left=country.x+"%";
+marker.style.top=country.y+"%";
+
+}
+else{
+
+document.getElementById("country").innerHTML="No VPN Connected";
+
+flag.style.display="none";
+
+marker.style.display="none";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
